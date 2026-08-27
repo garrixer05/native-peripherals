@@ -1,0 +1,41 @@
+{
+  "name": "native-peripherals",
+  "title": "Native Peripheral",
+  "version": "0.0.3",
+  "description": "React Native library for building BLE peripherals.",
+  "main": "lib/index",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "android",
+    "ios",
+    "native-peripherals.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react-native"
+  ],
+  "author": {
+    "name": "Petr Bela",
+    "email": "github@petrbela.com"
+  },
+  "license": "MIT",
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-native": ">=0.59.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-native": "^0.72.0",
+    "react": "^18.2.0",
+    "react-native": "^0.74.1",
+    "typescript": "^5.1.3"
+  }
+}
