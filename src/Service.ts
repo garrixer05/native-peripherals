@@ -1,58 +1,61 @@
+import type { ServiceDef } from './NativeRNBlePeripheral'
 import Characteristic from './Characteristic'
+import { normalizeUuid } from './uuid'
 
 export default class Service {
-  /** Characteristics in the service */
-  characteristics?: Characteristic[]
+  readonly uuid: string
+  readonly primary: boolean
+  readonly characteristics: Characteristic[]
+  /** Nested (included) services. */
+  readonly services: Service[]
 
-  primary: boolean = true
-
-  /** List of nested services. */
-  services?: Service[]
-
-  /** UUID of the characteristic. */
-  uuid!: string
-
-  /**
-   * Define a GATT service.
-   */
   constructor(params: {
-    /** Characteristics in the service */
-    characteristics?: Characteristic[]
-    /**
-     * Whether the service is primary. Default to `true`.
-     *
-     * _Note:_ A primary service is a service that provides the primary functionality of a device. A secondary service is a service that provides auxiliary functionality of a device and is referenced from at least one primary service on the device. A secondary service is a service that is only intended to be referenced from a primary service or another secondary service or other higher layer specification. A secondary service is only relevant in the context of the entity that references it.
-     */
-    primary?: boolean
-    /** List of nested services. */
-    services?: Service[]
-    /** __Required__ UUID of the characteristic. */
     uuid: string
+    /** Defaults to `true`. */
+    primary?: boolean
+    characteristics?: Characteristic[]
+    services?: Service[]
   }) {
     if (!params.uuid) throw new Error('Service UUID is required!')
 
-    Object.assign(this, {
-      ...params,
-      uuid: params.uuid.toLowerCase(),
-    })
+    this.uuid = normalizeUuid(params.uuid)
+    this.primary = params.primary ?? true
+    this.characteristics = params.characteristics ?? []
+    this.services = params.services ?? []
+
+    this.characteristics.forEach(ch => ch._attach(this.uuid))
   }
 
-  /** Recursively return this service's and nested services' characteristics, as a hash indexed by each characteristic's UUID. */
-  characteristicsByUuid() {
-    let chs: { [uuid: string]: Characteristic } = {}
-
-    if (this.characteristics) {
-      this.characteristics.forEach(ch => {
-        chs[ch.uuid] = ch
-      })
-    }
-
-    if (this.services) {
-      this.services.forEach(service => {
-        chs = { ...chs, ...service.characteristicsByUuid() }
-      })
-    }
-
-    return chs
+  /** @internal Flat list for native: nested services first, so each is registered before its parent. */
+  toDefs(): ServiceDef[] {
+    const nested = ([] as ServiceDef[]).concat(
+      ...this.services.map(s => s.toDefs())
+    )
+    return [
+      ...nested,
+      {
+        uuid: this.uuid,
+        primary: this.primary,
+        characteristics: this.characteristics.map(ch => ch.toDef()),
+        includedServiceUuids: this.services.map(s => s.uuid),
+      },
+    ]
   }
+
+  /** @internal This service's and all nested services' UUIDs, nested first. */
+  allServiceUuids(): string[] {
+    return toDefsUuids(this)
+  }
+
+  /** @internal Every characteristic in this service and in nested services. */
+  allCharacteristics(): Characteristic[] {
+    return ([] as Characteristic[]).concat(
+      ...this.services.map(s => s.allCharacteristics()),
+      this.characteristics
+    )
+  }
+}
+
+function toDefsUuids(service: Service): string[] {
+  return service.toDefs().map(def => def.uuid)
 }

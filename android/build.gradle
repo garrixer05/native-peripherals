@@ -1,58 +1,58 @@
-// android/build.gradle
-
-def safeExtGet(prop, fallback) {
-    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
-}
-
 buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
-    }
+  ext.safeExtGet = { prop, fallback ->
+    rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath("com.android.tools.build:gradle:8.7.2")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${safeExtGet('kotlinVersion', '2.0.21')}")
+  }
 }
 
-apply plugin: 'com.android.library'
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+apply plugin: "com.facebook.react"
 
-def DEFAULT_COMPILE_SDK_VERSION = 34
-def DEFAULT_BUILD_TOOLS_VERSION = "34.0.0"
-def DEFAULT_MIN_SDK_VERSION = 21
-def DEFAULT_TARGET_SDK_VERSION = 34
+react {
+  jsRootDir = file("../src/")
+  libraryName = "RNBlePeripheral"
+  codegenJavaPackageName = "com.reactnative.bleperipheral"
+}
 
 android {
-    namespace "com.reactnative.peripheral"
-    compileSdkVersion safeExtGet('compileSdkVersion', DEFAULT_COMPILE_SDK_VERSION)
-    buildToolsVersion safeExtGet('buildToolsVersion', DEFAULT_BUILD_TOOLS_VERSION)
-    
-    defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', DEFAULT_MIN_SDK_VERSION)
-        targetSdkVersion safeExtGet('targetSdkVersion', DEFAULT_TARGET_SDK_VERSION)
-        versionCode 1
-        versionName "1.0"
-    }
-    
-    lintOptions {
-        abortOnError false
-    }
+  namespace "com.reactnative.bleperipheral"
+  compileSdkVersion safeExtGet("compileSdkVersion", 35)
+
+  defaultConfig {
+    minSdkVersion safeExtGet("minSdkVersion", 24)
+    targetSdkVersion safeExtGet("targetSdkVersion", 35)
+  }
+
+  buildFeatures {
+    buildConfig true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = "17"
+  }
 }
 
 repositories {
-    mavenLocal()
-    maven {
-        // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-        url "$rootDir/../node_modules/react-native/android"
-    }
-    maven {
-        // Android JSC is installed from npm
-        url "$rootDir/../node_modules/jsc-android/dist"
-    }
-    google()
-    mavenCentral()
+  mavenCentral()
+  google()
 }
 
 dependencies {
-    //noinspection GradleDynamicVersion
-    implementation 'com.facebook.react:react-native:+'  // From node_modules
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
 }
