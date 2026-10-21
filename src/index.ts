@@ -1,3 +1,5 @@
+import Manager from './Manager'
+
 export { default as Manager } from './Manager'
 export { default as Service } from './Service'
 export { default as Characteristic } from './Characteristic'
@@ -13,3 +15,6 @@ export type {
   SubscriptionMode,
   CharacteristicParams,
 } from './Characteristic'
+
+/** Shared instance, so `import Peripheral from 'native-peripherals'` keeps working. */
+export default new Manager()

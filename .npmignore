@@ -1,8 +1,13 @@
 *.xcuserstate
 xcuserdata
 example
-android/build/
-ios/build/
+android/build
+android/build/**
+android/.gradle
+android/.gradle/**
+ios/build
+ios/build/**
 .gradle/
 *.tgz
 node_modules/
+
